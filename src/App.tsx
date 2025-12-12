@@ -549,7 +549,6 @@ export default function App() {
           </div>
         </div>
       </header>
-
       <main className="flex-1 flex overflow-hidden relative">
         
         <aside className="w-80 bg-card border-r border-border p-6 flex flex-col gap-8 z-10 shadow-xl overflow-y-auto">
@@ -731,7 +730,7 @@ export default function App() {
               <img 
                 src={piece.imgData} 
                 alt={`Piece ${piece.id}`}
-                className="w-full h-full pointer-events-none"
+                className="w-full h-full pointer-events-none font-thin"
                 style={{ 
                     filter: piece.isLocked ? 'brightness(1.0)' : 'brightness(1.1)' 
                 }}
