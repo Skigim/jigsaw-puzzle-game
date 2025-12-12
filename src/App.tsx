@@ -190,11 +190,12 @@ export default function App() {
           effectiveHeight = canvas.width;
         }
 
-        const safeMaxX = Math.max(0, containerWidth - effectiveWidth - 20);
-        const safeMaxY = Math.max(0, containerHeight - effectiveHeight - 20);
+        const margin = 50;
+        const maxX = Math.max(margin, containerWidth - effectiveWidth - margin);
+        const maxY = Math.max(margin, containerHeight - effectiveHeight - margin);
 
-        const randomX = Math.random() * safeMaxX + 10;
-        const randomY = Math.random() * safeMaxY + 10;
+        const randomX = Math.random() * (maxX - margin) + margin;
+        const randomY = Math.random() * (maxY - margin) + margin;
 
         newPieces.push({
           id: r * cols + c,
@@ -733,23 +734,35 @@ export default function App() {
                 width: piece.width,
                 height: piece.height,
                 zIndex: piece.zIndex,
-                cursor: piece.isLocked ? 'default' : 'grab',
-                pointerEvents: piece.isLocked ? 'none' : 'auto',
+                pointerEvents: 'none',
                 transition: isDragging && pieces.find(p => p.id === activePieceId)?.groupId === piece.groupId
                     ? 'none'
                     : 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 filter: piece.isLocked ? 'none' : 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))'
               }}
-              onPointerDown={(e) => handlePointerDown(e, piece)}
             >
               <img 
                 src={piece.imgData} 
                 alt={`Piece ${piece.id}`}
-                className="w-full h-full pointer-events-none font-thin"
+                className="w-full h-full pointer-events-none"
                 style={{ 
                     filter: piece.isLocked ? 'brightness(1.0)' : 'brightness(1.1)' 
                 }}
               />
+              {!piece.isLocked && (
+                <div
+                  className="absolute"
+                  style={{
+                    left: piece.pad,
+                    top: piece.pad,
+                    width: piece.pieceWidth,
+                    height: piece.pieceHeight,
+                    cursor: 'grab',
+                    pointerEvents: 'auto'
+                  }}
+                  onPointerDown={(e) => handlePointerDown(e, piece)}
+                />
+              )}
             </div>
           ))}
 
