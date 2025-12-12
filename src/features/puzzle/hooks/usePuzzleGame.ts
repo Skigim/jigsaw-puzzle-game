@@ -3,11 +3,13 @@ import type { GameConfig } from '@/types/puzzle';
 import { useImageLoader } from './useImageLoader';
 import { usePuzzleGenerator } from './usePuzzleGenerator';
 import { usePieceDragging } from './usePieceDragging';
+import { saveGameState, loadGameState, clearGameState } from '../utils/persistence';
 
 export function usePuzzleGame() {
   const [config, setConfig] = useState<GameConfig>({ rows: 4, cols: 6 });
   const [isComplete, setIsComplete] = useState<boolean>(false);
   const [showPreview, setShowPreview] = useState<boolean>(false);
+  const [isRestoring, setIsRestoring] = useState<boolean>(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
@@ -48,11 +50,47 @@ export function usePuzzleGame() {
     imageLoader.resetImage();
     generator.resetPuzzle();
     setIsComplete(false);
+    clearGameState();
   }, [imageLoader, generator]);
 
   const togglePreview = useCallback(() => {
     setShowPreview(prev => !prev);
   }, []);
+
+  // Restore saved state on mount
+  useEffect(() => {
+    const savedState = loadGameState();
+    if (savedState && savedState.imageUrl && savedState.pieces.length > 0) {
+      // Restore config
+      setConfig(savedState.config);
+      
+      // Restore image
+      imageLoader.loadFromUrl(savedState.imageUrl);
+      
+      // Restore puzzle state
+      generator.restoreState(savedState.pieces, savedState.gameSize);
+      
+      // Check if already complete
+      if (savedState.pieces.every(p => p.isLocked)) {
+        setIsComplete(true);
+      }
+    }
+    setIsRestoring(false);
+  }, []);
+
+  // Save state when pieces change
+  useEffect(() => {
+    if (isRestoring) return;
+    if (generator.pieces.length > 0 && imageLoader.imageUrl) {
+      saveGameState({
+        imageUrl: imageLoader.imageUrl,
+        config,
+        pieces: generator.pieces,
+        gameSize: generator.gameSize,
+        savedAt: Date.now()
+      });
+    }
+  }, [generator.pieces, generator.gameSize, imageLoader.imageUrl, config, isRestoring]);
 
   // Check for completion
   useEffect(() => {

@@ -102,12 +102,18 @@ export function usePuzzleGenerator() {
     setGameSize({ width: 0, height: 0 });
   }, []);
 
+  const restoreState = useCallback((savedPieces: PieceState[], savedGameSize: GameSize) => {
+    setPieces(savedPieces);
+    setGameSize(savedGameSize);
+  }, []);
+
   return {
     pieces,
     setPieces,
     gameSize,
     loading,
     generatePuzzle,
-    resetPuzzle
+    resetPuzzle,
+    restoreState
   };
 }
