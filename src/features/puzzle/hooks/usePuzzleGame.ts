@@ -3,6 +3,7 @@ import type { GameConfig } from '@/types/puzzle';
 import { useImageLoader } from './useImageLoader';
 import { usePuzzleGenerator } from './usePuzzleGenerator';
 import { usePieceDragging } from './usePieceDragging';
+import { useViewport } from './useViewport';
 import { saveGameState, loadGameState, clearGameState } from '../utils/persistence';
 
 export function usePuzzleGame() {
@@ -16,6 +17,7 @@ export function usePuzzleGame() {
 
   const imageLoader = useImageLoader();
   const generator = usePuzzleGenerator();
+  const viewportHook = useViewport(containerRef);
 
   const dragging = usePieceDragging({
     pieces: generator.pieces,
@@ -24,7 +26,8 @@ export function usePuzzleGame() {
     config,
     containerRef,
     boardRef,
-    isComplete
+    isComplete,
+    viewport: viewportHook.viewport
   });
 
   const handleImageUpload = useCallback((file: File) => {
@@ -118,9 +121,23 @@ export function usePuzzleGame() {
     setIsComplete,
     showPreview,
 
+    // Viewport state
+    viewport: viewportHook.viewport,
+    isPanning: viewportHook.isPanning,
+    handleWheel: viewportHook.handleWheel,
+    handlePanStart: viewportHook.handlePanStart,
+    handlePanMove: viewportHook.handlePanMove,
+    handlePanEnd: viewportHook.handlePanEnd,
+    resetViewport: viewportHook.resetViewport,
+    zoomIn: viewportHook.zoomIn,
+    zoomOut: viewportHook.zoomOut,
+
     // Dragging state
     isDragging: dragging.isDragging,
     activePieceId: dragging.activePieceId,
+    selectedPieceIds: dragging.selectedPieceIds,
+    selectionBox: dragging.selectionBox,
+    isSelectingBox: dragging.isSelectingBox,
 
     // Refs
     containerRef,
@@ -134,6 +151,8 @@ export function usePuzzleGame() {
     togglePreview,
     handlePointerDown: dragging.handlePointerDown,
     handlePointerMove: dragging.handlePointerMove,
-    handlePointerUp: dragging.handlePointerUp
+    handlePointerUp: dragging.handlePointerUp,
+    startSelectionBox: dragging.startSelectionBox,
+    clearSelection: dragging.clearSelection
   };
 }

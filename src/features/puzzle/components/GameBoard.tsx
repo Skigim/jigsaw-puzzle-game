@@ -1,9 +1,15 @@
-import { RefObject } from 'react';
+import { RefObject, useMemo } from 'react';
 import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import type { PieceState, GameSize } from '@/types/puzzle';
 import { PuzzlePiece } from './PuzzlePiece';
-import { useViewport } from '../hooks/useViewport';
 import { Button } from '@/components/ui/button';
+import type { SelectionBox } from '../hooks/usePieceDragging';
+
+interface ViewportState {
+  x: number;
+  y: number;
+  scale: number;
+}
 
 interface GameBoardProps {
   pieces: PieceState[];
@@ -12,10 +18,25 @@ interface GameBoardProps {
   imageUrl: string | null;
   isDragging: boolean;
   activePieceId: number | null;
+  selectedPieceIds: Set<number>;
+  selectionBox: SelectionBox | null;
+  isSelectingBox: boolean;
   boardRef: RefObject<HTMLDivElement | null>;
   containerRef: RefObject<HTMLDivElement | null>;
   onPointerDown: (e: React.PointerEvent, piece: PieceState) => void;
+  onStartSelectionBox: (e: React.PointerEvent) => void;
+  onClearSelection: () => void;
   hasImage: boolean;
+  // Viewport props (lifted from useViewport)
+  viewport: ViewportState;
+  isPanning: boolean;
+  handleWheel: (e: React.WheelEvent) => void;
+  handlePanStart: (e: React.PointerEvent) => void;
+  handlePanMove: (e: React.PointerEvent) => void;
+  handlePanEnd: () => void;
+  resetViewport: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
 }
 
 export function GameBoard({
@@ -25,34 +46,56 @@ export function GameBoard({
   imageUrl,
   isDragging,
   activePieceId,
+  selectedPieceIds,
+  selectionBox,
+  isSelectingBox,
   boardRef,
   containerRef,
   onPointerDown,
-  hasImage
+  onStartSelectionBox,
+  onClearSelection,
+  hasImage,
+  viewport,
+  isPanning,
+  handleWheel,
+  handlePanStart,
+  handlePanMove,
+  handlePanEnd,
+  resetViewport,
+  zoomIn,
+  zoomOut
 }: GameBoardProps) {
-  const {
-    viewport,
-    isPanning,
-    handleWheel,
-    handlePanStart,
-    handlePanMove,
-    handlePanEnd,
-    resetViewport,
-    zoomIn,
-    zoomOut
-  } = useViewport(containerRef);
+  // Memoize activeGroupId to avoid recalculating for each piece
+  const activeGroupId = useMemo(() => {
+    if (activePieceId === null) return null;
+    return pieces.find(p => p.id === activePieceId)?.groupId ?? null;
+  }, [activePieceId, pieces]);
+
+  // Handler for container pointer down - starts selection box or panning
+  const handleContainerPointerDown = (e: React.PointerEvent) => {
+    // Middle mouse button or ctrl+click = pan
+    if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
+      handlePanStart(e);
+      return;
+    }
+    
+    // Left click on empty space = start selection box
+    if (e.button === 0 && !e.ctrlKey && hasImage) {
+      onStartSelectionBox(e);
+    }
+  };
 
   return (
     <div
       ref={containerRef}
       className="flex-1 min-w-0 min-h-0 overflow-hidden"
       style={{
-        cursor: isPanning ? 'grabbing' : isDragging ? 'grabbing' : 'default',
+        cursor: isSelectingBox ? 'crosshair' : isPanning ? 'grabbing' : isDragging ? 'grabbing' : 'default',
         backgroundColor: 'oklch(0.12 0.01 240)',
         position: 'relative'
       }}
       onWheel={handleWheel}
-      onPointerDown={handlePanStart}
+      onPointerDown={handleContainerPointerDown}
       onPointerMove={handlePanMove}
       onPointerUp={handlePanEnd}
       onPointerLeave={handlePanEnd}
@@ -108,18 +151,47 @@ export function GameBoard({
         )}
 
         {pieces.map((piece) => {
-          const isInActiveGroup = pieces.find(p => p.id === activePieceId)?.groupId === piece.groupId;
+          // Check if piece is selected via multi-selection OR single selection
+          const isInActiveGroup = activeGroupId !== null && piece.groupId === activeGroupId;
+          const isMultiSelected = selectedPieceIds.has(piece.id);
+          
           return (
             <PuzzlePiece
               key={piece.id}
               piece={piece}
               isDragging={isDragging}
               isActive={isInActiveGroup}
+              isSelected={isInActiveGroup || isMultiSelected}
               onPointerDown={onPointerDown}
             />
           );
         })}
+
+        {/* Selection box */}
+        {selectionBox && (
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              left: Math.min(selectionBox.startX, selectionBox.endX),
+              top: Math.min(selectionBox.startY, selectionBox.endY),
+              width: Math.abs(selectionBox.endX - selectionBox.startX),
+              height: Math.abs(selectionBox.endY - selectionBox.startY),
+              border: '2px dashed oklch(0.7 0.15 220 / 0.8)',
+              backgroundColor: 'oklch(0.7 0.15 220 / 0.1)',
+              borderRadius: '4px'
+            }}
+          />
+        )}
       </div>
+
+      {/* Click to clear selection (only when not doing other actions) */}
+      {!isDragging && !isPanning && !isSelectingBox && (
+        <div
+          className="absolute inset-0"
+          style={{ pointerEvents: 'none', zIndex: -1 }}
+          onClick={onClearSelection}
+        />
+      )}
 
       {!hasImage && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

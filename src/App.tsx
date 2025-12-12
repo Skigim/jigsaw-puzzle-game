@@ -61,10 +61,24 @@ export default function App() {
           imageUrl={game.imageUrl}
           isDragging={game.isDragging}
           activePieceId={game.activePieceId}
+          selectedPieceIds={game.selectedPieceIds}
+          selectionBox={game.selectionBox}
+          isSelectingBox={game.isSelectingBox}
           boardRef={game.boardRef}
           containerRef={game.containerRef}
           onPointerDown={game.handlePointerDown}
+          onStartSelectionBox={game.startSelectionBox}
+          onClearSelection={game.clearSelection}
           hasImage={!!game.image}
+          viewport={game.viewport}
+          isPanning={game.isPanning}
+          handleWheel={game.handleWheel}
+          handlePanStart={game.handlePanStart}
+          handlePanMove={game.handlePanMove}
+          handlePanEnd={game.handlePanEnd}
+          resetViewport={game.resetViewport}
+          zoomIn={game.zoomIn}
+          zoomOut={game.zoomOut}
         />
       </main>
 
