@@ -4,7 +4,7 @@ export const SNAP_THRESHOLD = 30;
 
 export const TAB_SIZE_RATIO = 0.25;
 export const PAD_MULTIPLIER = 0.5;
-export const IMAGE_SCALE_FACTOR = 0.75; // Reduced from 0.9 to fit better
+export const IMAGE_SCALE_FACTOR = 0.5; // Smaller puzzle to leave room for sorting
 export const RANDOM_POSITION_MARGIN = 50;
 
 export const SAMPLE_IMAGES: SampleImage[] = [

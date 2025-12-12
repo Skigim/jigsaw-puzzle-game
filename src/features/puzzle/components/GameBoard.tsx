@@ -46,9 +46,9 @@ export function GameBoard({
           style={{ 
             width: gameSize.width, 
             height: gameSize.height,
-            left: '50%',
+            right: '2rem',
             top: '50%',
-            transform: 'translate(-50%, -50%)'
+            transform: 'translateY(-50%)'
           }}
         >
           {showPreview && imageUrl && (
