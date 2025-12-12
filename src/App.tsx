@@ -613,37 +613,37 @@ export default function App() {
             </div>
           ) : (
             <>
+                  <div className="h-px bg-border flex-1" />
+                <div className="relative aspect-video rounded-lg overflow-hidden border border-border bg-background shadow-inner">
+                  <img src={imageUrl!} alt="Preview" className="w-full h-full object-contain opacity-50" />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {SAMPLE_IMAGES.map((sample) => (
+                    <button
+                      key={sample.label}
+                      onClick={() => loadSampleImage(sample.url)}
+                      className="group relative aspect-video rounded-lg overflow-hidden border border-border hover:border-primary transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <img 
+                        src={sample.url} 
+                        alt={sample.label}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span className="text-xs font-medium text-white">{sample.label}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
               <div className="space-y-4">
                 <div className="relative aspect-video rounded-lg overflow-hidden border border-border bg-background shadow-inner">
                   <img src={imageUrl!} alt="Preview" className="w-full h-full object-contain opacity-50" />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                    <button 
-                        onClick={() => document.getElementById('change-img')?.click()}
-                        className="flex items-center gap-2 px-4 py-2 bg-card/80 hover:bg-secondary text-foreground text-sm rounded-full backdrop-blur-sm transition-colors border border-border"
-                    >
-                        <RefreshCw size={14} /> Change Image
-                    </button>
-                    <input id="change-img" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex items-center gap-2 text-primary border-b border-border pb-2">
-                    <Settings size={18} />
-                    <h3 className="font-medium">Difficulty</h3>
-                </div>
-                
-                <div className="space-y-4">
-                    <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Pieces</span>
-                        <span className="text-foreground font-mono">{config.rows * config.cols}</span>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-2">
-                        {[
-                            { label: 'Easy', r: 3, c: 4 },
-                            { label: 'Medium', r: 4, c: 6 },
                             { label: 'Hard', r: 6, c: 9 }
                         ].map((mode) => (
                             <button
