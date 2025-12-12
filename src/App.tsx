@@ -22,6 +22,10 @@ interface PieceState {
   height: number;
   imgData: string;
   zIndex: number;
+  clipPath: string;
+  pieceWidth: number;
+  pieceHeight: number;
+  pad: number;
 }
 
 interface GameConfig {
@@ -84,6 +88,82 @@ export default function App() {
       setIsComplete(false);
     };
     img.src = url;
+  };
+
+  const generateClipPathPolygon = (pieceWidth: number, pieceHeight: number, shape: number[], pad: number, canvasWidth: number, canvasHeight: number): string => {
+    const points: string[] = [];
+    const [top, right, bottom, left] = shape;
+    const tabSize = Math.min(pieceWidth, pieceHeight) * 0.25;
+    
+    const addPoint = (x: number, y: number) => {
+      const percentX = ((x + pad) / canvasWidth * 100).toFixed(2);
+      const percentY = ((y + pad) / canvasHeight * 100).toFixed(2);
+      points.push(`${percentX}% ${percentY}%`);
+    };
+
+    addPoint(0, 0);
+    
+    if (top === 0) {
+      addPoint(pieceWidth, 0);
+    } else {
+      const s1 = 0.35, s2 = 0.65;
+      for (let t = 0; t <= 1; t += 0.05) {
+        const x = pieceWidth * t;
+        let y = 0;
+        if (t >= s1 && t <= s2) {
+          const localT = (t - s1) / (s2 - s1);
+          y = -top * tabSize * 1.2 * Math.sin(localT * Math.PI);
+        }
+        addPoint(x, y);
+      }
+    }
+    
+    if (right === 0) {
+      addPoint(pieceWidth, pieceHeight);
+    } else {
+      const s1 = 0.35, s2 = 0.65;
+      for (let t = 0; t <= 1; t += 0.05) {
+        let x = pieceWidth;
+        const y = pieceHeight * t;
+        if (t >= s1 && t <= s2) {
+          const localT = (t - s1) / (s2 - s1);
+          x = pieceWidth + right * tabSize * 1.2 * Math.sin(localT * Math.PI);
+        }
+        addPoint(x, y);
+      }
+    }
+    
+    if (bottom === 0) {
+      addPoint(0, pieceHeight);
+    } else {
+      const s1 = 0.35, s2 = 0.65;
+      for (let t = 1; t >= 0; t -= 0.05) {
+        const x = pieceWidth * t;
+        let y = pieceHeight;
+        if (t >= s1 && t <= s2) {
+          const localT = (t - s1) / (s2 - s1);
+          y = pieceHeight + bottom * tabSize * 1.2 * Math.sin(localT * Math.PI);
+        }
+        addPoint(x, y);
+      }
+    }
+    
+    if (left === 0) {
+      addPoint(0, 0);
+    } else {
+      const s1 = 0.35, s2 = 0.65;
+      for (let t = 1; t >= 0; t -= 0.05) {
+        let x = 0;
+        const y = pieceHeight * t;
+        if (t >= s1 && t <= s2) {
+          const localT = (t - s1) / (s2 - s1);
+          x = -left * tabSize * 1.2 * Math.sin(localT * Math.PI);
+        }
+        addPoint(x, y);
+      }
+    }
+    
+    return `polygon(${points.join(', ')})`;
   };
 
   const generatePuzzle = async () => {
@@ -175,6 +255,7 @@ export default function App() {
         ctx.restore();
 
         const imgData = canvas.toDataURL('image/png');
+        const clipPath = generateClipPathPolygon(pieceWidth, pieceHeight, shape, pad, canvas.width, canvas.height);
 
         const safeMaxX = Math.max(0, containerWidth - canvas.width - 20);
         const safeMaxY = Math.max(0, containerHeight - canvas.height - 20);
@@ -199,7 +280,11 @@ export default function App() {
           width: canvas.width,
           height: canvas.height,
           imgData,
-          zIndex: 1
+          zIndex: 1,
+          clipPath,
+          pieceWidth,
+          pieceHeight,
+          pad
         });
       }
     }
@@ -723,7 +808,8 @@ export default function App() {
                 transition: isDragging && pieces.find(p => p.id === activePieceId)?.groupId === piece.groupId
                     ? 'none'
                     : 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                filter: piece.isLocked ? 'none' : 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))'
+                filter: piece.isLocked ? 'none' : 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))',
+                clipPath: piece.clipPath
               }}
               onPointerDown={(e) => handlePointerDown(e, piece)}
             >
