@@ -29,9 +29,10 @@ export function DifficultySelector({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {presets.map((preset) => {
             const isSelected = currentConfig.rows === preset.rows && currentConfig.cols === preset.cols;
+            const pieces = preset.rows * preset.cols;
             return (
               <Button
                 key={preset.label}
@@ -39,9 +40,10 @@ export function DifficultySelector({
                 size="sm"
                 onClick={() => onChange({ rows: preset.rows, cols: preset.cols })}
                 disabled={disabled}
-                className="flex-1"
+                className="flex-col h-auto py-2"
               >
-                {preset.label}
+                <span className="text-lg font-bold">{preset.label}</span>
+                <span className="text-[10px] opacity-70">pieces</span>
               </Button>
             );
           })}

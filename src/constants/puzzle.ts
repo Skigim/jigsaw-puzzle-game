@@ -15,7 +15,10 @@ export const SAMPLE_IMAGES: SampleImage[] = [
 ];
 
 export const DIFFICULTY_PRESETS: DifficultyPreset[] = [
-  { label: 'Easy', rows: 3, cols: 4 },
-  { label: 'Medium', rows: 4, cols: 6 },
-  { label: 'Hard', rows: 6, cols: 9 }
+  { label: '12', rows: 3, cols: 4 },
+  { label: '24', rows: 4, cols: 6 },
+  { label: '54', rows: 6, cols: 9 },
+  { label: '100', rows: 10, cols: 10 },
+  { label: '250', rows: 15, cols: 17 },
+  { label: '500', rows: 20, cols: 25 }
 ];
