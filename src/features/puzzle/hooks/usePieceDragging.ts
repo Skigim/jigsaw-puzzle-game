@@ -1,7 +1,9 @@
-import { useState, useCallback, RefObject } from 'react';
+import { useState, useCallback, useRef, RefObject } from 'react';
 import type { PieceState, Point } from '@/types/puzzle';
 import { rotateGroupAround90Degrees } from '../utils/geometryHelpers';
 import { detectNeighborSnap, detectBoardSnap, mergeGroups, lockGroup } from '../utils/snapDetection';
+
+const DOUBLE_TAP_DELAY = 300; // ms
 
 interface UsePieceDraggingProps {
   pieces: PieceState[];
@@ -26,6 +28,9 @@ export function usePieceDragging({
   const [activePieceId, setActivePieceId] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState<Point>({ x: 0, y: 0 });
   const [groupDragOffsets, setGroupDragOffsets] = useState<Record<number, Point>>({});
+  
+  // Double-tap detection
+  const lastTapRef = useRef<{ pieceId: number; time: number } | null>(null);
 
   const rotateGroup = useCallback((clickedPiece: PieceState) => {
     setPieces(prev => {
@@ -51,6 +56,7 @@ export function usePieceDragging({
   }, [setPieces]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent, piece: PieceState) => {
+    // Right-click to rotate (desktop)
     if (e.button === 2) {
       e.preventDefault();
       rotateGroup(piece);
@@ -58,6 +64,21 @@ export function usePieceDragging({
     }
 
     if (piece.isLocked || isComplete || !containerRef.current) return;
+
+    // Double-tap detection for rotation (mobile-friendly)
+    const now = Date.now();
+    const lastTap = lastTapRef.current;
+    
+    if (lastTap && lastTap.pieceId === piece.id && (now - lastTap.time) < DOUBLE_TAP_DELAY) {
+      // Double tap detected - rotate instead of drag
+      e.preventDefault();
+      lastTapRef.current = null;
+      rotateGroup(piece);
+      return;
+    }
+    
+    // Record this tap for double-tap detection
+    lastTapRef.current = { pieceId: piece.id, time: now };
 
     e.preventDefault();
     setIsDragging(true);

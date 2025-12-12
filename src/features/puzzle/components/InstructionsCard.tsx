@@ -1,7 +1,10 @@
 import { MousePointer2, RotateCw, Link } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMobileDetection } from '@/hooks/use-mobile';
 
 export function InstructionsCard() {
+  const { showMobileControls } = useMobileDetection();
+
   return (
     <Card className="bg-secondary/50">
       <CardHeader>
@@ -10,11 +13,16 @@ export function InstructionsCard() {
       <CardContent className="space-y-2 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <MousePointer2 size={14} className="text-primary flex-shrink-0" />
-          <span>Drag to move groups</span>
+          <span>Drag to move pieces</span>
         </div>
         <div className="flex items-center gap-2">
           <RotateCw size={14} className="text-primary flex-shrink-0" />
-          <span><strong>Right-click</strong> to rotate group</span>
+          <span>
+            {showMobileControls 
+              ? <><strong>Double-tap</strong> to rotate</>
+              : <><strong>Right-click</strong> or <strong>double-click</strong> to rotate</>
+            }
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <Link size={14} className="text-primary flex-shrink-0" />

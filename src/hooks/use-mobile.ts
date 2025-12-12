@@ -17,3 +17,31 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+
+export function useIsTouchDevice() {
+  const [isTouch, setIsTouch] = useState<boolean>(false)
+
+  useEffect(() => {
+    // Check for touch capability
+    const hasTouch = 'ontouchstart' in window || 
+      navigator.maxTouchPoints > 0 ||
+      // @ts-expect-error - msMaxTouchPoints is IE-specific
+      navigator.msMaxTouchPoints > 0
+
+    setIsTouch(hasTouch)
+  }, [])
+
+  return isTouch
+}
+
+export function useMobileDetection() {
+  const isMobile = useIsMobile()
+  const isTouch = useIsTouchDevice()
+
+  return {
+    isMobile,
+    isTouch,
+    // Show mobile controls if either mobile viewport OR touch device
+    showMobileControls: isMobile || isTouch
+  }
+}
